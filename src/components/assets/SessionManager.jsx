@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { startSession, endSession, getActiveSession } from '../../services/api';
+import { startSession, endSession, getUsageLogs } from '../../services/api';
 
 export default function SessionManager({ asset, onSessionUpdate }) {
   const [activeSession, setActiveSession] = useState(null);
@@ -15,10 +15,13 @@ export default function SessionManager({ asset, onSessionUpdate }) {
 
   const checkActiveSession = async () => {
     try {
-      const response = await getActiveSession(asset.id);
-      if (response.data) {
-        setActiveSession(response.data);
-        startTimer(response.data.start_time);
+      const response = await getUsageLogs(asset.id);
+      const logs = response.data?.results || response.data || [];
+      const activeLog = logs.find(log => !log.end_time);
+      
+      if (activeLog) {
+        setActiveSession(activeLog);
+        startTimer(activeLog.start_time);
       }
     } catch (err) {
       console.error('Error checking active session:', err);
@@ -26,13 +29,15 @@ export default function SessionManager({ asset, onSessionUpdate }) {
   };
 
   const startTimer = (startTime) => {
-    const timer = setInterval(() => {
+    if (timer) clearInterval(timer);
+    
+    const newTimer = setInterval(() => {
       const start = new Date(startTime);
       const now = new Date();
       const duration = Math.floor((now - start) / 1000); // duration in seconds
       setTimer(duration);
     }, 1000);
-    setTimer(timer);
+    setTimer(newTimer);
   };
 
   const formatDuration = (seconds) => {
@@ -51,6 +56,7 @@ export default function SessionManager({ asset, onSessionUpdate }) {
       startTimer(response.data.start_time);
       if (onSessionUpdate) onSessionUpdate();
     } catch (err) {
+      console.error('Start session error:', err);
       setError(err.response?.data?.error || 'Failed to start session');
     }
   };
@@ -64,6 +70,7 @@ export default function SessionManager({ asset, onSessionUpdate }) {
       setTimer(null);
       if (onSessionUpdate) onSessionUpdate();
     } catch (err) {
+      console.error('End session error:', err);
       setError(err.response?.data?.error || 'Failed to end session');
     }
   };
