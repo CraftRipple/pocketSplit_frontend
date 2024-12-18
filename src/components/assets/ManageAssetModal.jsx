@@ -9,6 +9,7 @@ import {
 } from '../../services/api';
 import SessionManager from './SessionManager';
 import UsageAnalytics from './UsageAnalytics';
+import SessionHistory from './SessionHistory';
 
 export default function ManageAssetModal({ isOpen, onClose, asset, onAssetUpdated }) {
   const [activeTab, setActiveTab] = useState('details');
@@ -198,16 +199,28 @@ export default function ManageAssetModal({ isOpen, onClose, asset, onAssetUpdate
               Analytics
             </button>
             {!asset.owner && (
-              <button
-                onClick={() => setActiveTab('session')}
-                className={`${
-                  activeTab === 'session'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Session
-              </button>
+              <>
+                <button
+                  onClick={() => setActiveTab('session')}
+                  className={`${
+                    activeTab === 'session'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                >
+                  Session
+                </button>
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`${
+                    activeTab === 'history'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                >
+                  History
+                </button>
+              </>
             )}
           </nav>
         </div>
@@ -343,6 +356,10 @@ export default function ManageAssetModal({ isOpen, onClose, asset, onAssetUpdate
               asset={asset} 
               onSessionUpdate={onAssetUpdated}
             />
+          )}
+
+          {activeTab === 'history' && !asset.owner && (
+            <SessionHistory asset={asset} />
           )}
         </div>
       </div>
